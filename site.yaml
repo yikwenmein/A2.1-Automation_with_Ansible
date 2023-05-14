@@ -1,50 +1,64 @@
 ---
-- name: Deploy HAProxy and Flask app
-  hosts: all
-  become: true
+- hosts: all
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Upadate cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+- hosts: haproxy
+  vars:
+    haproxy_config_path: /etc/haproxy/haproxy.cfg
+    haproxy_template_path: ./haproxy.cfg.j2
 
   tasks:
-    - name: Install HAProxy package
+    - name: Install HAproxy
       apt:
         name: haproxy
         state: present
-
-    - name: Configure HAProxy
+    - name: Copy HAproxy configuration file
       template:
-        src: haproxy.cfg.j2
-        dest: /etc/haproxy/haproxy.cfg
-        mode: 0644
-      notify:
-        - Restart HAProxy
-
-    - name: Deploy Flask app
-      copy:
-        src: myapp.py
-        dest: /opt/myapp/
-        mode: 0644
-
-    - name: Install Flask dependencies
-      pip:
-        name: "{{ item }}"
-      with_items:
-        - flask
-        - gunicorn
-
-    - name: Configure systemd service for Flask app
-      template:
-        src: myapp.service.j2
-        dest: /etc/systemd/system/myapp.service
-        mode: 0644
-      notify:
-        - Reload systemd
-
-  handlers:
+        src: "{{ haproxy_template_path }}"
+        dest: "{{ haproxy_config_path }}"
     - name: Restart HAProxy
-      systemd:
+      service:
         name: haproxy
         state: restarted
 
-    - name: Reload systemd
-      systemd:
-        daemon_reload: yes
-        state: reloaded
+- hosts: servers
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Upadate cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+  vars:
+    app_path: ./app.py
+    app_command: "python {{ app_path }}.py"
+
+  tasks:
+    - name: Install Python and pip
+      apt:
+        name:
+          - python3
+          - python3-pip
+        state: latest
+
+    - name: Install Flask
+      ansible.builtin.pip: #pip:
+        name: flask
+        state: latest
+    - name: copy app.py
+      copy:
+        src: "{{ app_path }}"
+        dest: /home/ubuntu
+        owner: ubuntu
+        group: ubuntu
+        mode: 0644
+    - name: Running flask app
+      shell: "{{ app_command }}"
+      async: 3600
+      poll: 0
