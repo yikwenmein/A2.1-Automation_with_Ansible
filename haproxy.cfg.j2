@@ -42,10 +42,8 @@ frontend haproxynode
     default_backend backendnodes
 
 backend backendnodes
+    mode http
     balance roundrobin
-    option forwardfor
-    http-request set-header X-Forwarded-Port %[dst_port]
-    http-request add-header X-Forwarded-Proto https if { ssl_fc }
-    option httpchk HEAD / HTTP/1.1\r\nHost:localhost
-    server node1 192.168.1.3:8080 check
-    server node2 192.168.1.4:8080 check
+{% for server in groups['servers'] %}
+    server  {{ server }} {{ hostvars[server]['ansible_default_ipv4']['address'] }}:80 check
+{% endfor %}
