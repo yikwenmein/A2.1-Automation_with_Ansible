@@ -1,32 +1,4 @@
 ---
-- hosts: all
-  gather_facts: yes
-  become: yes
-  tasks:
-    - name: Upadate cache
-      apt:
-        update_cache: yes
-        cache_valid_time: 3600
-
-- hosts: haproxy
-  vars:
-    haproxy_config_path: /etc/haproxy/haproxy.cfg
-    haproxy_template_path: ./haproxy.cfg.j2
-
-  tasks:
-    - name: Install HAproxy
-      apt:
-        name: haproxy
-        state: present
-    - name: Copy HAproxy configuration file
-      template:
-        src: "{{ haproxy_template_path }}"
-        dest: "{{ haproxy_config_path }}"
-    - name: Restart HAProxy
-      service:
-        name: haproxy
-        state: restarted
-
 - hosts: servers
   gather_facts: yes
   become: yes
@@ -48,7 +20,7 @@
         state: latest
 
     - name: Install Flask
-      ansible.builtin.pip: #pip:
+      pip:
         name: flask
         state: latest
     - name: copy app.py
@@ -61,4 +33,29 @@
     - name: Running flask app
       shell: "{{ app_command }}"
       async: 3600
-      poll: 0
+      poll: 0     
+- hosts: haproxy
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Upadate cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+  vars:
+    haproxy_config_path: /etc/haproxy/haproxy.cfg
+    haproxy_template_path: ./haproxy.cfg.j2
+
+  tasks:
+    - name: Install HAproxy
+      apt:
+        name: haproxy
+        state: present
+    - name: Copy HAproxy configuration file
+      template:
+        src: "{{ haproxy_template_path }}"
+        dest: "{{ haproxy_config_path }}"
+    - name: Restart HAProxy
+      service:
+        name: haproxy
+        state: restarted
