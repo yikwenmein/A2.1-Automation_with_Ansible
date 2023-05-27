@@ -2,16 +2,18 @@
 - hosts: servers
   gather_facts: yes
   become: yes
+  vars:
+    app_path: app.py
+    app_command: "{{ app_path }}.py"
+
   tasks:
+    # - debug:
+    #     var: ansible_default_ipv4.address
     - name: Upadate cache
       apt:
         update_cache: yes
         cache_valid_time: 3600
-  vars:
-    app_path: ./app.py
-    app_command: "python {{ app_path }}.py"
 
-  tasks:
     - name: Install Python and pip
       apt:
         name:
@@ -23,39 +25,97 @@
       pip:
         name: flask
         state: latest
+
+    - name: Install SNMPd package
+      package: name=snmpd state=latest
+
+    - name: Install SNMP package
+      package: name=snmp state=latest
+
+    - name: Copy snmpd conf file
+      copy:
+        src: ./snmpd.conf
+        dest: /etc/snmp/snmpd.conf
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    - name: Restart snmpd
+      service: name=snmpd state=restarted
     - name: copy app.py
       copy:
-        src: "{{ app_path }}"
+        src: ./app.py #"{{ app_path }}"
         dest: /home/ubuntu
         owner: ubuntu
         group: ubuntu
         mode: 0644
     - name: Running flask app
-      shell: "{{ app_command }}"
+      shell: python3 /home/ubuntu/app.py #"{{ app_command }}"
       async: 3600
-      poll: 0     
+      poll: 0
+    # - name: Allow SNMP through firewall (if applicable)
+    #   ansible.builtin.firewalld:
+    #     service: snmp
+    #     permanent: true
+    #     state: enabled
+    #     immediate: true
+
 - hosts: haproxy
   gather_facts: yes
   become: yes
-  tasks:
-    - name: Upadate cache
-      apt:
-        update_cache: yes
-        cache_valid_time: 3600
+
   vars:
     haproxy_config_path: /etc/haproxy/haproxy.cfg
     haproxy_template_path: ./haproxy.cfg.j2
 
   tasks:
+    # - debug:
+    #     var: ansible_default_ipv4.address
+
+    - name: Upadate cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+  
     - name: Install HAproxy
       apt:
         name: haproxy
         state: present
+    - name: Install Nginx package
+      package: name=nginx state=latest
+      # package:
+      #   name: nginx
+      #   state: latest
     - name: Copy HAproxy configuration file
       template:
         src: "{{ haproxy_template_path }}"
         dest: "{{ haproxy_config_path }}"
     - name: Restart HAProxy
-      service:
-        name: haproxy
-        state: restarted
+      service: name=haproxy state=restarted
+
+    - name: Install SNMP package
+      package: name=snmp state=latest
+
+    - name: Copy Nginx configuration file
+      copy:
+        src: ./nginx.conf
+        dest: /etc/nginx/nginx.conf
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+    - name: Copy Nginx default file
+      copy:
+        src: ./default
+        dest: /etc/nginx/sites-enabled/default
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+    - name: Restart Nginx service
+      service: name=nginx state=restarted
+
+    # - name: Allow SNMP through firewall (if applicable)
+    #   ansible.builtin.firewalld:
+    #     service: snmp
+    #     permanent: true
+    #     state: enabled
+    #     immediate: true
