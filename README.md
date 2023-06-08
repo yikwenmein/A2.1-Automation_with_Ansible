@@ -17,7 +17,8 @@ HAproxy takes care of the flask app while Nginx takes care of SNMP
 
 The logical network/service map would be as follows: 
 
-```(Internet)--->HAproxy(HTTP/80:HTTP/80)+Nginx(UDP/1611:UDP/161) 
+```
+(Internet)--->HAproxy(HTTP/80:HTTP/80)+Nginx(UDP/1611:UDP/161) 
              (internal network using private address range; 10.0.1.0/27) 
               +--->devA 
               +--->devB 
