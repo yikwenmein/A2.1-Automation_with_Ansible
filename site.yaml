@@ -1,5 +1,5 @@
 ---
-- hosts: servers
+- hosts: webservers
   gather_facts: yes
   become: yes
   vars:
@@ -60,7 +60,7 @@
     #     state: enabled
     #     immediate: true
 
-- hosts: haproxy
+- hosts: HAproxy
   gather_facts: yes
   become: yes
 
