@@ -10,7 +10,7 @@ app = flask.Flask(__name__)
 @app.route('/')
 def index():
     Time= time.strftime("%H:%M:%S")
-    return Time+" Serving FROM "+h_name+" ("+IP_addres+")\n"
+    return "Time---> "+Time+ "\n"+ "hostname---> "+h_name+" ("+IP_addres+")\n"
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port = 80, debug = True)
