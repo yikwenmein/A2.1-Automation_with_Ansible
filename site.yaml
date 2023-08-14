@@ -2,9 +2,9 @@
 - hosts: webservers
   gather_facts: yes
   become: yes
-  vars:
-    app_path: app.py
-    app_command: "{{ app_path }}.py"
+  # vars:
+  #   app_path: app.py
+  #   app_command: "{{ app_path }}.py"
 
   tasks:
     # - debug:
@@ -60,18 +60,11 @@
     #     state: enabled
     #     immediate: true
 
-- hosts: HAproxy
+- hosts: haproxy
   gather_facts: yes
   become: yes
 
-  vars:
-    haproxy_config_path: /etc/haproxy/haproxy.cfg
-    haproxy_template_path: ./haproxy.cfg.j2
-
   tasks:
-    # - debug:
-    #     var: ansible_default_ipv4.address
-
     - name: Upadate cache
       apt:
         update_cache: yes
@@ -88,8 +81,15 @@
       #   state: latest
     - name: Copy HAproxy configuration file
       template:
-        src: "{{ haproxy_template_path }}"
-        dest: "{{ haproxy_config_path }}"
+        src: ./haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+    - name: Copy password file
+      copy:
+        src: ./uipassword
+        dest: /etc/haproxy/
+        owner: ubuntu
+        group: ubuntu
+        mode: 0777
     - name: Restart HAProxy
       service: name=haproxy state=restarted
 

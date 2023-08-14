@@ -44,6 +44,17 @@ frontend haproxynode
 backend backendnodes
     mode http
     balance roundrobin
-{% for server in groups['servers'] %}
+{% for server in groups['webservers'] %}
     server  {{ server }} {{ hostvars[server]['ansible_default_ipv4']['address'] }}:80 check
 {% endfor %}
+
+# Enable stats and set the route
+listen stats
+    bind *:8011
+    mode http
+    stats enable
+    stats hide-version
+    stats refresh 1s
+    stats uri /stats
+    stats auth admin:pass
+
