@@ -89,7 +89,7 @@
         dest: /etc/haproxy/
         owner: ubuntu
         group: ubuntu
-        mode: 0777
+        mode: 0777   
     - name: Restart HAProxy
       service: name=haproxy state=restarted
 
