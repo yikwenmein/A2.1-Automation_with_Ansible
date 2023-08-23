@@ -103,10 +103,17 @@
         owner: ubuntu
         group: ubuntu
         mode: '0644'
-    - name: Copy Nginx default file
+    - name: Copy Nginx default file to sites-enabled
       copy:
         src: ./default
         dest: /etc/nginx/sites-enabled/default
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+    - name: Copy Nginx default file to sites-available
+      copy:
+        src: ./default
+        dest: /etc/nginx/sites-available/default
         owner: ubuntu
         group: ubuntu
         mode: '0644'
