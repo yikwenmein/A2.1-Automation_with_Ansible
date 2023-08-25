@@ -26,8 +26,36 @@
         name: flask
         state: latest
 
+    - name: Stop SNMPd service
+      service:
+        name: snmpd
+        state: stopped
+      ignore_errors: yes  # SNMPd might not be installed initially
+
+    - name: Remove SNMPd packages
+      apt:
+        name: 
+          - snmpd
+        state: absent
+        autoremove: yes
+        purge: true
+
     - name: Install SNMPd package
       package: name=snmpd state=latest
+
+    - name: Stop SNMP service
+      service:
+        name: snmp
+        state: stopped
+      ignore_errors: yes  # SNMPd might not be installed initially
+
+    - name: Remove SNMP packages
+      apt:
+        name: 
+          - snmp
+        state: absent
+        autoremove: yes
+        purge: true
 
     - name: Install SNMP package
       package: name=snmp state=latest
@@ -53,12 +81,7 @@
       shell: python3 /home/ubuntu/app.py #"{{ app_command }}"
       async: 3600
       poll: 0
-    # - name: Allow SNMP through firewall (if applicable)
-    #   ansible.builtin.firewalld:
-    #     service: snmp
-    #     permanent: true
-    #     state: enabled
-    #     immediate: true
+
 
 - hosts: haproxy
   gather_facts: yes
@@ -69,33 +92,53 @@
       apt:
         update_cache: yes
         cache_valid_time: 3600
-  
+
+    - name: Stop HAproxy service
+      service:
+        name: haproxy
+        state: stopped
+      ignore_errors: yes  # HAproxy might not be installed initially
+
+    - name: Remove HAproxy packages
+      apt:
+        name: 
+          - haproxy
+        state: absent
+        autoremove: yes
+        purge: true
+
     - name: Install HAproxy
       apt:
         name: haproxy
-        state: present
+        state: present    
+    - name: Copy HAproxy configuration file
+      template:
+        src: ./haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+    - name: Restart HAProxy
+      service: name=haproxy state=restarted
+
+    - name: Stop NGINX service
+      service:
+        name: nginx
+        state: stopped
+      ignore_errors: yes  # NGINX might not be installed initially
+
+    - name: Remove NGINX packages
+      apt:
+        name: 
+          - nginx
+          # - nginx-full
+          # - nginx-common
+        state: absent
+        autoremove: yes
+        purge: true
+    
     - name: Install Nginx package
       package: name=nginx state=latest
       # package:
       #   name: nginx
       #   state: latest
-    - name: Copy HAproxy configuration file
-      template:
-        src: ./haproxy.cfg.j2
-        dest: /etc/haproxy/haproxy.cfg
-    - name: Copy password file
-      copy:
-        src: ./uipassword
-        dest: /etc/haproxy/
-        owner: ubuntu
-        group: ubuntu
-        mode: 0777   
-    - name: Restart HAProxy
-      service: name=haproxy state=restarted
-
-    - name: Install SNMP package
-      package: name=snmp state=latest
-
     - name: Copy Nginx configuration file
       copy:
         src: ./nginx.conf
@@ -110,19 +153,22 @@
         owner: ubuntu
         group: ubuntu
         mode: '0644'
-    - name: Copy Nginx default file to sites-available
-      copy:
-        src: ./default
-        dest: /etc/nginx/sites-available/default
-        owner: ubuntu
-        group: ubuntu
-        mode: '0644'
+    # - name: Copy Nginx default file to sites-available
+    #   copy:
+    #     src: ./default
+    #     dest: /etc/nginx/sites-available/default
+    #     owner: ubuntu
+    #     group: ubuntu
+    #     mode: '0644'
     - name: Restart Nginx service
       service: name=nginx state=restarted
 
-    # - name: Allow SNMP through firewall (if applicable)
-    #   ansible.builtin.firewalld:
-    #     service: snmp
-    #     permanent: true
-    #     state: enabled
-    #     immediate: true
+    - name: Copy password file
+      copy:
+        src: ./uipassword
+        dest: /etc/haproxy/
+        owner: ubuntu
+        group: ubuntu
+        mode: 0777   
+    - name: Install SNMP package
+      package: name=snmp state=latest

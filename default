@@ -19,8 +19,8 @@
 # Default server configuration
 #
 server {
-	listen 8083 default_server;
-	listen [::]:8083 default_server;
+	listen 1611 default_server;
+	listen [::]:1611 default_server;
 
 	# SSL configuration
 	#
