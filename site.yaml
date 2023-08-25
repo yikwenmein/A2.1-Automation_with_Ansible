@@ -43,11 +43,11 @@
     - name: Install SNMPd package
       package: name=snmpd state=latest
 
-    - name: Stop SNMP service
-      service:
-        name: snmp
-        state: stopped
-      ignore_errors: yes  # SNMPd might not be installed initially
+    # - name: Stop SNMP service
+    #   service:
+    #     name: snmp
+    #     state: stopped
+    #   ignore_errors: yes  # SNMPd might not be installed initially
 
     - name: Remove SNMP packages
       apt:
@@ -153,13 +153,13 @@
         owner: ubuntu
         group: ubuntu
         mode: '0644'
-    # - name: Copy Nginx default file to sites-available
-    #   copy:
-    #     src: ./default
-    #     dest: /etc/nginx/sites-available/default
-    #     owner: ubuntu
-    #     group: ubuntu
-    #     mode: '0644'
+    - name: Copy Nginx default file to sites-available
+      copy:
+        src: ./default
+        dest: /etc/nginx/sites-available/default
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
     - name: Restart Nginx service
       service: name=nginx state=restarted
 
