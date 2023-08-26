@@ -169,6 +169,13 @@
         dest: /etc/haproxy/
         owner: ubuntu
         group: ubuntu
-        mode: 0777   
+        mode: 0777
+    - name: Remove SNMP packages
+      apt:
+        name: 
+          - snmp
+        state: absent
+        autoremove: yes
+        purge: true       
     - name: Install SNMP package
       package: name=snmp state=latest
