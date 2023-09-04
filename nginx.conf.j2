@@ -97,9 +97,9 @@ stream {
     # }
 
     upstream dns_servers {
-        server 10.0.1.14:161;
-        server 10.0.1.18:161;
-		server 10.0.1.19:161;
+	{% for server in groups['webservers'] %}
+        server {{ hostvars[server]['ansible_default_ipv4']['address'] }}:161;
+    {% endfor %}
     }
 
 	server {

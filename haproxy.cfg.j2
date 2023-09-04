@@ -48,15 +48,11 @@ backend backendnodes
     server  {{ server }} {{ hostvars[server]['ansible_default_ipv4']['address'] }}:80 check
 {% endfor %}
 
-userlist mycredentials
-    user joe insecure-password pass
-
 # Enable stats and set the route
 listen stats
     bind *:8011
     mode http
     stats enable
-    stats hide-version
     stats refresh 1s
     stats uri /stats
-    stats auth user:{% include 'uipassword' %}
+    stats auth admin:{% include 'uipassword' %}

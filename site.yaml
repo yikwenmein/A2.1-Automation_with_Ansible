@@ -72,13 +72,13 @@
       service: name=snmpd state=restarted
     - name: copy app.py
       copy:
-        src: ./app.py #"{{ app_path }}"
+        src: ./app.py 
         dest: /home/ubuntu
         owner: ubuntu
         group: ubuntu
         mode: 0644
     - name: Running flask app
-      shell: python3 /home/ubuntu/app.py #"{{ app_command }}"
+      shell: python3 /home/ubuntu/app.py 
       async: 3600
       poll: 0
 
@@ -112,7 +112,7 @@
         name: haproxy
         state: present    
     - name: Copy HAproxy configuration file
-      template:
+      ansible.builtin.template:
         src: ./haproxy.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
     - name: Restart HAProxy
@@ -140,8 +140,8 @@
       #   name: nginx
       #   state: latest
     - name: Copy Nginx configuration file
-      copy:
-        src: ./nginx.conf
+      ansible.builtin.template:
+        src: ./nginx.conf.j2
         dest: /etc/nginx/nginx.conf
         owner: ubuntu
         group: ubuntu
@@ -176,6 +176,6 @@
           - snmp
         state: absent
         autoremove: yes
-        purge: true       
+        purge: true           
     - name: Install SNMP package
       package: name=snmp state=latest
